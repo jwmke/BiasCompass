@@ -1,0 +1,8 @@
+{
+	"type": "package",
+	"handle": "bias-compass",
+	"version": "0.0.1",
+	"description": "Evaluating bias in news articles through comparison against other sources.",
+	"author": "jwmke",
+	"public": false
+}
