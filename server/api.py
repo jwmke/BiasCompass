@@ -17,12 +17,12 @@ class BiasCompass(PackageService):
     langchain.llm_cache = SteamshipCache(client=self.client)
     
     template = """
-    Use the search tool to find three separate news articles that have similar titles to this news article: {article_link}
+    Use the search tool to find three separate news articles that have similar titles to this news article: {link}
 
     Respond with the links to these three articles
     """
     initial_prompt = PromptTemplate(
-        input_variables=["article_link"],
+        input_variables=["link"],
         template=template
     )
 
@@ -40,5 +40,6 @@ class BiasCompass(PackageService):
 
     agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
     
-    return agent(initial_prompt)
+    return agent(initial_prompt.format(link=article_link)
+)
 
