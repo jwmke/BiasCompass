@@ -1,7 +1,7 @@
 from steamship import RuntimeEnvironments, Steamship, check_environment
 from termcolor import colored
 
-
+# Evaluating bias in news articles through comparison against other sources.
 def main():
     # This helper provides runtime API key prompting, etc.
     check_environment(RuntimeEnvironments.LOCALHOST)
@@ -10,24 +10,11 @@ def main():
         api = client.use(package_handle="bias-compass")
 
         while True:
-            query = input(colored("Query: ", "blue"))
-            print(colored("Please be patient. Generating...", "blue"), flush=True)
-            response = api.invoke("/evaluate_article", query=query)
-            print(colored("Answer: ", "blue"), colored(f'{response["output"].strip()}', "green"))
-            print()
-            print(colored("Intermediate Steps: ", "blue"))
-            step = 1
-            for action in response["intermediate_steps"]:
-                print(
-                    colored(
-                        f"{step}. Tool({action[0].get('tool', 'unknown')}): {action[0].get('tool_input', 'unknown')}",
-                        "blue",
-                    ),
-                    colored(f"{action[1]}", "green"),
-                )
-                step = step + 1
-            print("\n-----\n")
-
+            article_link = input(colored("Article: ", "blue"))
+            print(colored("Please be patient. Finding Articles...", "blue"), flush=True)
+            response = api.invoke("/evaluate_article", article_link=article_link)
+            print(colored("Articles: ", "blue"), colored(f'{response["output"].strip()}', "green"))
+            print("\n")
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,32 @@
 {
 	"type": "package",
 	"handle": "bias-compass",
-	"version": "0.0.1",
-	"description": "Evaluating bias in news articles through comparison against other sources.",
+	"version": "0.0.5",
+	"description": "Test Deploy",
 	"author": "jwmke",
-	"public": false
+	"entrypoint": "Unused",
+	"public": true,
+	"plugin": null,
+	"build_config": {
+		"ignore": []
+	},
+	"configTemplate": {},
+	"steamshipRegistry": {
+		"tagline": "News Article Bias Compass",
+		"tagline2": null,
+		"usefulFor": null,
+		"videoUrl": null,
+		"githubUrl": null,
+		"demoUrl": null,
+		"blogUrl": null,
+		"jupyterUrl": null,
+		"authorGithub": "jwmke",
+		"authorName": "jwmke",
+		"authorEmail": null,
+		"authorTwitter": null,
+		"authorUrl": null,
+		"tags": [
+			"Langchain"
+		]
+	}
 }

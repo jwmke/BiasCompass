@@ -1,30 +1,44 @@
-from typing import Any, Dict
-
 import langchain
-from langchain.agents import initialize_agent
+from langchain.agents import AgentType, initialize_agent
+from langchain import PromptTemplate
 from langchain.agents.tools import Tool
-from steamship.invocable import PackageService, post
-
+from steamship import check_environment, RuntimeEnvironments, Steamship
+from steamship.invocable import post, PackageService
 from steamship_langchain.cache import SteamshipCache
-from steamship_langchain.llms import OpenAI
+from steamship_langchain.llms import OpenAIChat
 from steamship_langchain.tools import SteamshipSERP
+from termcolor import colored
 
 
-class BiasCompassPackage(PackageService):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Sets up the langchain global cache for LLM calls
-        langchain.llm_cache = SteamshipCache(client=self.client)
+class BiasCompass(PackageService):
 
-    @post("/evaluate_article")
-    def self_ask_with_search(self, query: str) -> Dict[str, Any]:
-        """Returns a dictionary containing both the answer for the query and any intermediate steps taken."""
-        llm = OpenAI(client=self.client, temperature=0.0, cache=True)
-        serp_tool = SteamshipSERP(client=self.client, cache=True)
-        tools = [
-            Tool(name="Intermediate Answer", func=serp_tool.search, description="Google Search")
-        ]
-        self_ask_with_search = initialize_agent(
-            tools, llm, agent="bias-compass", verbose=False, return_intermediate_steps=True
-        )
-        return self_ask_with_search(query)
+  @post("/evaluate_article")
+  def evaluate_article(self, article_link: str):
+    langchain.llm_cache = SteamshipCache(client=self.client)
+    
+    template = """
+    Use the search tool to find three separate news articles that have similar titles to this news article: {article_link}
+
+    Respond with the links to these three articles
+    """
+    initial_prompt = PromptTemplate(
+        input_variables=["article_link"],
+        template=template
+    )
+
+    llm = OpenAIChat(client=self.client,
+                     temperature=0.0,
+                     cache=True,
+                     model_name="gpt-3.5-turbo")
+
+    serp_tool = SteamshipSERP(client=self.client, cache=True)
+    tools = [
+      Tool(name="Search Tool",
+           description="useful for searching for news articles",
+           func=serp_tool.search)
+    ]
+
+    agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+    
+    return agent(initial_prompt)
+
