@@ -2,44 +2,36 @@ import langchain
 from langchain.agents import AgentType, initialize_agent
 from langchain import PromptTemplate
 from langchain.agents.tools import Tool
-from steamship import check_environment, RuntimeEnvironments, Steamship
-from steamship.invocable import post, PackageService
-from steamship_langchain.cache import SteamshipCache
-from steamship_langchain.llms import OpenAIChat
-from steamship_langchain.tools import SteamshipSERP
+from langchain.llms import OpenAIChat
+from langchain.utilities import GoogleSerperAPIWrapper
 from termcolor import colored
+from dotenv import load_dotenv
 
+# Load environment variables from the .env file
+load_dotenv()
 
-class BiasCompass(PackageService):
+article_link = ""
 
-  @post("/evaluate_article")
-  def evaluate_article(self, article_link: str):
-    langchain.llm_cache = SteamshipCache(client=self.client)
-    
-    template = """
-    Use the search tool to find three separate news articles that have similar titles to this news article: {link}
-
-    Respond with the links to these three articles
-    """
-    initial_prompt = PromptTemplate(
-        input_variables=["link"],
-        template=template
-    )
-
-    llm = OpenAIChat(client=self.client,
-                     temperature=0.0,
-                     cache=True,
-                     model_name="gpt-3.5-turbo")
-
-    serp_tool = SteamshipSERP(client=self.client, cache=True)
-    tools = [
-      Tool(name="Search Tool",
-           description="useful for searching for news articles",
-           func=serp_tool.search)
-    ]
-
-    agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
-    
-    return agent(initial_prompt.format(link=article_link)
+template = """
+Use the search tool to find three separate news articles that have similar titles to this news article: {link}
+These three news articles must be written within the same relative time frame as the original article.
+Respond with only the links to these three articles.
+"""
+initial_prompt = PromptTemplate(
+    input_variables=["link"],
+    template=template
 )
+
+llm = OpenAIChat(model_name='gpt-3.5-turbo', temperature=0.0)
+
+serp_tool = GoogleSerperAPIWrapper(type="news", tbs="qdr:m")
+tools = [
+    Tool(name="Search Tool",
+        description="useful for searching for news articles",
+        func=serp_tool.run)
+]
+
+agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+
+print(agent(initial_prompt.format(link=article_link)))
 
