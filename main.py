@@ -1,44 +1,63 @@
+from requests_oauthlib import OAuth1Session
 import os
-import tweepy
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-CONSUMER_KEY = os.environ.get("CONSUMER_KEY")
-CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET")
-ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
-ACCESS_SECRET = os.environ.get("ACCESS_SECRET")
+# consumer_key = os.environ.get("CONSUMER_KEY")
+# consumer_secret = os.environ.get("CONSUMER_SECRET")
 
-auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
-api = tweepy.API(auth)
+# # Get request token
+# request_token_url = "https://api.twitter.com/oauth/request_token?oauth_callback=oob&x_auth_access_type=write"
+# oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
 
-# Mention listener
-class MentionListener(tweepy.StreamListener):
-    def on_status(self, tweet):
-        # Ignore retweets
-        if tweet.retweeted or tweet.in_reply_to_status_id is not None:
-            return
+# try:
+#     fetch_response = oauth.fetch_request_token(request_token_url)
+# except ValueError:
+#     print(
+#         "There may have been an issue with the consumer_key or consumer_secret you entered."
+#     )
 
-        # Reply to mentions
-        username = tweet.user.screen_name
-        tweet_id = tweet.id_str
-        mention_text = tweet.text
-        reply_text = f"Testing. Username: @{username}, Article: {mention_text}"
+# resource_owner_key = fetch_response.get("oauth_token")
+# resource_owner_secret = fetch_response.get("oauth_token_secret")
+# print("Got OAuth token: %s" % resource_owner_key)
 
-        api.update_status(
-            status=reply_text,
-            in_reply_to_status_id=tweet_id,
-            auto_populate_reply_metadata=True,
-        )
+# # Get authorization
+# base_authorization_url = "https://api.twitter.com/oauth/authorize"
+# authorization_url = oauth.authorization_url(base_authorization_url)
+# print("Please go here and authorize: %s" % authorization_url)
+# verifier = input("Paste the PIN here: ")
 
-    def on_error(self, status_code):
-        if status_code == 420:
-            return False
+# # Get the access token
+# access_token_url = "https://api.twitter.com/oauth/access_token"
+# oauth = OAuth1Session(
+#     consumer_key,
+#     client_secret=consumer_secret,
+#     resource_owner_key=resource_owner_key,
+#     resource_owner_secret=resource_owner_secret,
+#     verifier=verifier,
+# )
+# oauth_tokens = oauth.fetch_access_token(access_token_url)
 
-# Create a stream listener
-listener = MentionListener()
-stream = tweepy.Stream(auth=api.auth, listener=listener)
+# access_token = oauth_tokens["oauth_token"]
+# access_token_secret = oauth_tokens["oauth_token_secret"]
 
-# Start streaming for mentions
-stream.filter(track=["@BiasCompass"])
+# print(f"access_token: {access_token}")
+# print(f"access_token_secret: {access_token_secret}")
+
+oauth = OAuth1Session(
+        os.environ.get("CONSUMER_KEY"), 
+        client_secret=os.environ.get("CONSUMER_SECRET"), 
+        resource_owner_key=os.environ.get("ACCESS_TOKEN"), 
+        resource_owner_secret=os.environ.get("ACCESS_SECRET"),
+    )
+payload = {"text": "Hello World!"}
+
+# Making the request
+response = oauth.post(
+    "https://api.twitter.com/2/tweets",
+     json=payload
+)
+
+print(response)
