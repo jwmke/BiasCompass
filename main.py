@@ -1,9 +1,9 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-
 import langchain
 import requests
 import functools
+import validators
+import os
+
 from threading import Thread
 from langchain import PromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -15,10 +15,10 @@ from langchain.output_parsers import RegexParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 
-import validators
-from bs4 import BeautifulSoup
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-import os
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 prompt_template = """Use the following excerpt from a news article titled "{question}" to determine whether any signals of political bias, political narratives, misinformation, or opinion-based journalism practices exist within the news article.
@@ -67,11 +67,6 @@ def timeout(timeout):
     return deco
 
 def handle_response(text: str) -> str:
-    # TODO: 
-    # 1. Get article link (do some validation)
-    # 2. Run article through compass_v2 logic
-    # 3. Return evaluation
-
     if not validators.url(text):
         return "The provided URL is not valid, please try again."
 
@@ -153,7 +148,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             new_text: str = text.replace('@BiasCompassBot', '').strip()
             response: str = handle_response(new_text)
         else:
-            return  # don't respond if not mentioned
+            return 
     else:
         response: str = handle_response(text)
 
