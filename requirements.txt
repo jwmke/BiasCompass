@@ -1,2 +1,7 @@
-steamship-langchain >= 0.0.20
-termcolor >= 2.2.0
+langchain
+python-telegram-bot
+validators
+requests
+python-dotenv
+beautifulsoup4
+unstructured
