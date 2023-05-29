@@ -1,7 +1,12 @@
 langchain
+openai
+tiktoken
+faiss-cpu
 python-telegram-bot
 validators
 requests
 python-dotenv
 beautifulsoup4
 unstructured
+tabulate
+pdf2image

@@ -127,7 +127,7 @@ def handle_response(text: str) -> str:
     chain = load_qa_with_sources_chain(ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.0), chain_type="map_rerank", metadata_keys=['source'], return_intermediate_steps=False, prompt=PROMPT)
     result = chain({"input_documents": docs, "question": title}, return_only_outputs=False)
 
-    if result["output_text"] == 'None found.':
+    if result["output_text"].replace(" ", "") == 'Nonefound.':
         return "No signals of bias found."
 
     for doc in result['input_documents']:
@@ -167,4 +167,4 @@ if __name__ == '__main__':
     app.add_error_handler(error)
 
     print('Polling...')
-    app.run_polling(poll_interval=10)
+    app.run_polling(poll_interval=5)
