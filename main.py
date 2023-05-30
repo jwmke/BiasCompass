@@ -6,6 +6,7 @@ import os
 
 from threading import Thread
 from langchain import PromptTemplate
+from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.document_loaders import UnstructuredURLLoader
@@ -23,7 +24,7 @@ from dotenv import load_dotenv
 
 prompt_template = """Use the following excerpt from a news article titled "{question}" to determine whether any signals of political bias, political narratives, misinformation, or opinion-based journalism practices exist within the news article.
 
-If you detect any signals of political bias, signals of a political narrative being pushed, signals of misinformation, or signals opinion-based journalism practices, concisely explain what the signals are. If you can't find any signals, reply with "None found.", don't try to make up signals.
+If you detect any signals of political bias, signals of a political narrative being pushed, signals of misinformation, or signals opinion-based journalism practices, concisely explain what the signals are. This explination should be between 25 and 100 words long. If you can't find any signals, reply with "None found.", don't try to make up signals.
 
 In addition to giving an explanation of the signals, also return a score of how confident you are that political bias, political narratives, misinformation, or opinion-based journalism exists in the excerpt. This should be in the following format:
 
@@ -72,7 +73,12 @@ def handle_response(text: str) -> str:
 
     response = requests.get(text)
     soup = BeautifulSoup(response.text, 'html.parser')
-    title = soup.find('title').get_text().split('|')[0]
+    title = soup.find('title')
+    if title is not None:
+        title = soup.find('title').get_text().split('|')[0]
+    else:
+        llm = OpenAI(model_name='gpt-3.5-turbo', temperature=0.0)
+        title = llm(f"Make an educated guess on what the title of a news article would be with the following URL: {text}")
 
     # serp_tool = GoogleSerperAPIWrapper(tbs="qdr:m")
     # similar_articles_serp = serp_tool.results(f"{title} news articles")
